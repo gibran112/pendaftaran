@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Pendaftaran</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f5f7fa;
+        }
+        
+        .data-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .smooth-transition {
+            transition: all 0.3s ease;
+        }
+        
+        .form-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ee 100%);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">Form Pendaftaran</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">Isi formulir di bawah ini dengan benar</p>
+        </header>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Form Section -->
+            <div class="form-section rounded-xl p-6 shadow-md">
+                <h2 class="text-xl font-semibold text-gray-700 mb-6"></h2>
+
+                <form id="dataForm" class="space-y-4">
+
+
+
+
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Gmail</label>
+                        <input type="email" id="email" name="email" required class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    </div>
+
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                        <input type="text" id="name" name="name" required class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    </div>
+
+
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon</label>
+                        <input type="tel" id="phone" name="phone" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    </div>
+
+                    <div>
+                        <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
+                        <textarea id="address" name="address" rows="3" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"></textarea>
+                    </div>
+
+                    <div>
+                        <label for="dob" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
+                        <input type="date" id="dob" name="dob" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+                    </div>
+
+                    <div class="pt-2">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300 ease-in-out transform hover:-translate-y-1">
+                            Simpan Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <area>
+            <!-- Data Section -->
+            <div class="bg-white rounded-xl p-6 shadow-md">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-semibold text-gray-700">Data Tersimpan</h2>
+
+
+                    <div id="dataContainer" class="space-y-4">
+                        <!-- Data akan muncul disini -->
+                        <div class="empty-state text-center py-8">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/73260449-ce34-42f8-8e3b-8a744fd7c999.png" alt="Ilustrasi kotak arsip kosong" class="mx-auto w-32 opacity-50 mb-4">
+                            <p class="text-gray-500">Belum ada data yang tersimpan</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const dataForm = document.getElementById('dataForm');
+                const dataContainer = document.getElementById('dataContainer');
+                const clearStorageBtn = document.getElementById('clearStorage');
+
+                // Memuat data saat halaman dimuat
+                loadData();
+
+                // Menangani pengiriman formulir
+                dataForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const formData = new FormData(dataForm);
+                    const data = {
+                        name: formData.get('name'),
+                        email: formData.get('email'),
+                        phone: formData.get('phone'),
+                        address: formData.get('address'),
+                        dob: formData.get('dob'),
+                        timestamp: new Date().toISOString()
+                    };
+
+                    if (checkLocalStorage()) {
+                        saveToLocalStorage(data);
+                        dataForm.reset();
+                        loadData();
+                    } else {
+                        showToast('Gagal menyimpan data. Browser Anda tidak mendukung localStorage', 'error');
+                    }
+
+                    showToast('Data berhasil disimpan!', 'success');
+                });
+
+                // Tombol hapus semua data
+                clearStorageBtn.addEventListener('click', function() {
+                    if (confirm('Apakah Anda yakin ingin menghapus semua data?')) {
+                        if (checkLocalStorage()) {
+                            localStorage.removeItem('formData');
+                            loadData();
+                        } else {
+                            showToast('Tidak bisa menghapus data. localStorage tidak tersedia', 'error');
+                        }
+                        showToast('Semua data telah dihapus', 'warning');
+                    }
+                });
+
+                // Fungsi untuk mengecek ketersediaan localStorage
+                function checkLocalStorage() {
+                    try {
+                        localStorage.setItem('test', 'test');
+                        localStorage.removeItem('test');
+                        return true;
+                    } catch (e) {
+                        return false;
+                    }
+                }
+
+                // Fungsi untuk menyimpan ke localStorage
+                function saveToLocalStorage(data) {
+                    let savedData = localStorage.getItem('formData');
+                    savedData = savedData ? JSON.parse(savedData) : [];
+
+                    savedData.push(data);
+                    localStorage.setItem('formData', JSON.stringify(savedData));
+                }
+
+                // Fungsi untuk memuat data dari localStorage
+                function loadData() {
+                    if (!checkLocalStorage()) {
+                        showToast('Browser Anda tidak mendukung localStorage', 'error');
+                        return;
+                    }
+                    const savedData = localStorage.getItem('formData');
+                    const data = savedData ? JSON.parse(savedData) : [];
+
+                    if (data.length === 0) {
+                        dataContainer.innerHTML = `
+                        <div class="empty-state text-center py-8">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/0a588f73-3c99-45d2-bbc7-56a239cd4c69.png" alt="Ilustrasi kotak arsip kosong" class="mx-auto w-32 opacity-50 mb-4">
+                            <p class="text-gray-500">Belum ada data yang tersimpan</p>
+                        </div>
+                    `;
+                        return;
+                    }
+
+                    dataContainer.innerHTML = '';
+
+                    // Menampilkan data terbaru di atas
+                    [...data].reverse().forEach((item, index) => {
+                        const dataCard = document.createElement('div');
+                        dataCard.className = 'data-card bg-white rounded-lg border border-gray-200 p-4 smooth-transition hover:shadow-lg cursor-pointer';
+                        dataCard.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-medium text-gray-800">${item.name}</h3>
+                                <p class="text-sm text-gray-600 mb-2">${item.email}</p>
+                                <div class="flex items-center text-xs text-gray-500">
+                                    <span>${formatDate(item.timestamp)}</span>
+                                </div>
+                            </div>
+                            <button class="delete-btn text-red-400 hover:text-red-600 text-sm" data-index="${data.length - 1 - index}">
+                                Hapus
+                            </button>
+                        </div>
+                        <div class="mt-2">
+                            <hr class="my-2">
+                            <p class="text-sm text-gray-700 mb-1"><span class="text-gray-500">Telepon:</span> ${item.phone || '-'}</p>
+                            <p class="text-sm text-gray-700 mb-1"><span class="text-gray-500">Alamat:</span> ${item.address || '-'}</p>
+                            <p class="text-sm text-gray-700"><span class="text-gray-500">Tanggal Lahir:</span> ${item.dob || '-'}</p>
+                        </div>
+                    `;
+
+                        dataContainer.appendChild(dataCard);
+                    });
+
+                    // Tambahkan event listener untuk tombol succes
+                    document.querySelectorAll('.delete-btn').forEach(btn => {
+                        btn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            const index = parseInt(this.getAttribute('data-index'));
+                            deleteData(index);
+                        });
+                    });
+                }
+
+                // Fungsi untuk menghapus data tertentu
+                function saveData(index) {
+                    let savedData = JSON.parse(localStorage.getItem('formData') || '[]');
+
+                    if (index >= 0 && index < savedData.length) {
+                        savedData.splice(index, 1);
+                        localStorage.setItem('formData', JSON.stringify(savedData));
+                        loadData();
+                        showToast('Data berhasil disimpan', 'success');
+                    }
+                }
+
+                // Fungsi untuk memformat tanggal
+                function formatDate(dateString) {
+                    const options = {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    };
+                    return new Date(dateString).toLocaleDateString('id-ID', options);
+                }
+
+                // Fungsi untuk menampilkan notifikasi
+                function showToast(message, type = 'info') {
+                    const toast = document.createElement('div');
+                    toast.className = `fixed bottom-4 right-4 px-4 py-2 rounded-lg shadow-lg text-white smooth-transition ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'}`;
+                    toast.textContent = message;
+                    document.body.appendChild(toast);
+
+                    setTimeout(() => {
+                        toast.classList.add('opacity-0');
+                        setTimeout(() => toast.remove(), 300);
+                    }, 3000);
+                }
+            });
+        </script>
+</body>
+
+</html>
